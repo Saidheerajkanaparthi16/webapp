@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -23,34 +22,36 @@ with st.sidebar.header('1. Upload your CSV data'):
 [Example CSV input file])
 """)
 
-# Pandas Profiling Report
-if uploaded_file is not None:
-    @st.cache_data
-    def load_csv():
-        csv = pd.read_csv(uploaded_file)
-        return csv
-    df = load_csv()
+# Function to load data
+def load_data(uploaded_file):
+    csv = pd.read_csv(uploaded_file)
+    return csv
+
+# Function to generate profile report
+def generate_profile_report(df):
     pr = ProfileReport(df, explorative=True)
+    return pr.to_html()
+
+# Displaying the Uploaded CSV and Profile Report
+if uploaded_file is not None:
+    df = load_data(uploaded_file)
+    report_html = generate_profile_report(df)
+    
     st.header('**Input DataFrame**')
     st.write(df)
     st.write('---')
     st.header('**Pandas Profiling Report**')
-    pr.to_notebook_iframe()
+    st.markdown(report_html, unsafe_allow_html=True)
+
 else:
     st.info('Awaiting for CSV file to be uploaded.')
     if st.button('Press to use Example Dataset'):
         # Example data
-        @st.cache_data
-        def load_data():
-            a = pd.DataFrame(
-                np.random.rand(100, 5),
-                columns=['a', 'b', 'c', 'd', 'e']
-            )
-            return a
-        df = load_data()
-        pr = ProfileReport(df, explorative=True)
+        df = pd.DataFrame(np.random.rand(100, 5), columns=['a', 'b', 'c', 'd', 'e'])
+        report_html = generate_profile_report(df)
+        
         st.header('**Input DataFrame**')
         st.write(df)
         st.write('---')
         st.header('**Pandas Profiling Report**')
-        pr.to_notebook_iframe()
+        st.markdown(report_html, unsafe_allow_html=True)
